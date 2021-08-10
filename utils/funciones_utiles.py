@@ -1,4 +1,8 @@
-def rgb2hsl(img_regb):
+def rgb2hsl(img_rgb):
+    import numpy as np
+    import cv2
+    
+    img_rgb = img_rgb.astype(np.float32)/255  
     #Para la conversión RGB - HSL debe garantizarse que las matrices coincidan en tamaño
     #y tipo de datos
     tam = np.shape(img_rgb)
@@ -79,7 +83,7 @@ def histogram_equalization(img):
     #Generar el histograma normalizado de la imagen 
     hist_norm = plt.hist(img_raveled, bins=255, range=(0.0, 255.0), density=True)
     #Limpiar la figura actual
-    plt.clf()
+    _ = plt.clf()
     #hist_norm[0] es un vector de probabilidades. Añadir al vector, el valor [1 - sumatoria de sus datos]
     pdf = hist_norm[0]
     np.append(pdf, 1.0 - np.sum(pdf))
@@ -123,8 +127,7 @@ def gamma_correction(img, a, gamma):
     img_copy = img.copy().astype(np.float32)/255.0
     #La función corrección gamma es de la forma ax^gamma, donde x es la imagen de entrada
     res_gamma = cv2.pow(img_copy,gamma)
-    res = cv2.multiply(res_gamma, a)
-    
+    res = res_gamma * a
     #Asegurar que la los datos queden entre 0 y 255 y sean uint8
     res[res<0] = 0
     res = res*255.0
@@ -139,18 +142,73 @@ def apply_non_linear_function(img, f, args):
     import numpy as np
     import cv2
     #Crear una matriz de ceros del tamaño de la imagen de entrada
-    res = np.zeros(img.shape, np.uint8)
+    res = np.zeros(img.shape, np.uint32)
     
     if f == 'T. gamma':
         res = gamma_correction(img,args[0],args[1])
 
     elif f == 'Ec. histograma':
+        res = np.zeros(img.shape, np.uint8)
         res = histogram_equalization(img)
 
     else:
         res = histogram_expansion(img)
 
-
-
-    
     return res
+
+def get_color_space(img, color_space, img_space):
+    
+    import cv2
+    
+    cs = color_space
+    color_space = cv2.COLOR_BGR2RGB if color_space=='RGB' else \
+                      cv2.COLOR_BGR2YUV if color_space=='YUB' else \
+                      cv2.COLOR_BGR2HSV if color_space=='HSV' else \
+                      cv2.COLOR_BGR2LAB if color_space=='LAB' else \
+                      cv2.COLOR_RGB2XYZ if color_space=='XYZ' else \
+                      cv2.COLOR_RGB2HLS if color_space=='HLS' else None
+
+    if color_space:
+        img_space  = cv2.cvtColor(img, color_space)
+
+    else:
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img_R = img_rgb[:,:,0]
+        img_G = img_rgb[:,:,1]
+        img_B = img_rgb[:,:,2]
+
+        if cs=='CMY':
+
+            img_space[:,:,0] = 255 - img_R
+            img_space[:,:,1] = 255 - img_G
+            img_space[:,:,2] = 255 - img_B
+
+        elif cs=='YIQ':
+
+            img_space[:,:,0] = 0.299*img_R + 0.587*img_G + 0.114*img_B
+            img_space[:,:,1] = 0.596*img_R - 0.274*img_G - 0.322*img_B
+            img_space[:,:,2] = 0.211*img_R - 0.523*img_G + 0.312*img_B
+
+        elif cs=='HSL':
+
+            img_space = rgb2hsl(img_rgb)
+
+    return color_space, img_space
+
+def get_mask():
+    
+    import cv2
+    import numpy as np
+
+    img_rgb = cv2.imread("./img/Limpio.jpg")
+
+    HLS= cv2.cvtColor(img_rgb,cv2.COLOR_RGB2HLS)
+    img_H_HLS = HLS[:, :, 0]
+    img_L_HLS = HLS[:, :, 1]
+    img_S_HLS = HLS[:, :, 2]
+
+
+    mask=np.zeros_like(img_rgb)
+    mask[img_S_HLS > 35]=255 
+    
+    return mask
