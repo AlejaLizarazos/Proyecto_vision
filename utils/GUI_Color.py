@@ -107,7 +107,7 @@ def show_interact(function, max_v=0, min_v=0, step=0, lineal=True,images=None):
                                     orientation='horizontal',
                                     readout=True,
                                     readout_format='.1f',
-                                    layout=Layout(visibility='hidden') if (not lineal and function!='T. gamma') else Layout()
+                                    layout=Layout(display='none') if (not lineal and function!='T. gamma') else Layout()
                                 ),
         b = widgets.FloatSlider(value=1,
                                     min=min_v,
@@ -119,7 +119,7 @@ def show_interact(function, max_v=0, min_v=0, step=0, lineal=True,images=None):
                                     orientation='horizontal',
                                     readout=True,
                                     readout_format='.1f',
-                                    layout=Layout(visibility='hidden') if (not lineal and function!='T. gamma') else Layout()
+                                    layout=Layout(display='none') if (not lineal and function!='T. gamma') else Layout()
                                 ),
         c = widgets.FloatSlider(value=1,
                                     min=min_v,
@@ -131,21 +131,21 @@ def show_interact(function, max_v=0, min_v=0, step=0, lineal=True,images=None):
                                     orientation='horizontal',
                                     readout=True,
                                     readout_format='.1f',
-                                    layout=Layout(visibility='hidden') if not lineal else Layout()
+                                    layout=Layout(display='none') if not lineal else Layout()
                                 ),
         f = widgets.Text(
                                 value=function,
                                 placeholder='Type something',
                                 description='String:',
                                 disabled=False,
-                                layout=Layout(visibility='hidden')
+                                layout=Layout(display='none')
                             ),
         lineal = widgets.Text(options=['RGB','CMY','YIQ','YUB','HSL','HSV','LAB','XYZ','HLS'],
                                 value=str(lineal),
                                 placeholder='Type something',
                                 description='String:',
                                 disabled=False,
-                                layout=Layout(visibility='hidden')
+                                layout=Layout(display='none')
                             ),
         
         img=widgets.Dropdown(

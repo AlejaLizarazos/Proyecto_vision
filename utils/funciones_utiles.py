@@ -69,7 +69,7 @@ def apply_linear_function(img, f, args):
         
     return res
 
-
+import matplotlib.pyplot as plt
 #Definir la función ecualización del histograma cuyo parámetro es una imagen
 def histogram_equalization(img):
      
