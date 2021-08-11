@@ -15,7 +15,7 @@ from utils.funciones_utiles import *
 ##############################################################
 # Create GUI
 
-def create_GUI():
+def create_GUI(images=None):
 
     # Se crean las pestañas
 
@@ -33,25 +33,25 @@ def create_GUI():
     # Se crean los "interact" y se definen (max_v=0, min_v=0, step=0) Para cada transformación
 
     with out1:
-        show_interact('suma', 255, 0, 1, lineal=True)
+        show_interact('suma', 255, 0, 1, lineal=True,images=images)
 
     with out2:
-        show_interact('resta', 255, 0, 1, lineal=True)
+        show_interact('resta', 255, 0, 1, lineal=True,images=images)
 
     with out3:
-        show_interact('multiplicacion', 5, 1, 1, lineal=True)
+        show_interact('multiplicacion', 5, 1, 1, lineal=True,images=images)
 
     with out4:
-        show_interact('division', 1, 0, 0.01, lineal=True)
+        show_interact('division', 1, 0, 0.01, lineal=True,images=images)
 
     with out5:
-        show_interact('T. gamma', 2, 0, 0.1, lineal=False)
+        show_interact('T. gamma', 2, 0, 0.1, lineal=False,images=images)
 
     with out6:
-        show_interact('Ec. histograma', lineal=False)
+        show_interact('Ec. histograma', lineal=False,images=images)
 
     with out7:
-        show_interact('Exp. histograma', lineal=False)
+        show_interact('Exp. histograma', lineal=False,images=images)
 
 
     ####################################
@@ -72,7 +72,7 @@ def create_GUI():
 ##############################################################
 # Show Interact
 
-def show_interact(function, max_v=0, min_v=0, step=0, lineal=True):
+def show_interact(function, max_v=0, min_v=0, step=0, lineal=True,images=None):
 
 
     box_layout = Layout(display='flex',
@@ -149,7 +149,7 @@ def show_interact(function, max_v=0, min_v=0, step=0, lineal=True):
                             ),
         
         img=widgets.Dropdown(
-            options=["B1", "B2", "B3","B4", "B5", "B6","B7", "B8", "B9","B10", "B11", "B12"], value="B1", description="Escoger imagen:",
+            options=[str(image) for image in images], value=str(images[0]), description="Escoger imagen:",
             style= {'description_width': 'auto'}
         ),
         
@@ -168,7 +168,7 @@ def show_interact(function, max_v=0, min_v=0, step=0, lineal=True):
 # Show Interact
 
 def analisis_espacio_color(color_space, channel, img, a, b, c, f, lineal, save):
-    img = cv2.imread(os.path.join("img/", img + '.jpg'))
+    img = cv2.imread(img)
     img_space = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
 
     img_tittle = color_space
