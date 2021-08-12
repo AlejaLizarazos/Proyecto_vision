@@ -8,14 +8,21 @@ import math
 from skimage import io, color
 import os
 import sys
+import glob
 
 
 from utils.funciones_utiles import *
+
+
 
 ##############################################################
 # Create GUI
 
 def create_GUI(images=None):
+    
+    for file in os.listdir('./img_with_transform/'):
+        if file.endswith('.jpg'):
+            os.remove('./img_with_transform/'+file)
 
     # Se crean las pestañas
 
@@ -33,7 +40,7 @@ def create_GUI(images=None):
     # Se crean los "interact" y se definen (max_v=0, min_v=0, step=0) Para cada transformación
 
     with out1:
-        show_interact('suma', 255, 0, 1, lineal=True,images=images)
+        show_interact('suma', 255, 0, 1, lineal=True,images=images)        
 
     with out2:
         show_interact('resta', 255, 0, 1, lineal=True,images=images)
@@ -162,12 +169,23 @@ def show_interact(function, max_v=0, min_v=0, step=0, lineal=True,images=None):
                                         layout=box_layout,
                                         style= {'description_width': '200px'}
                                         ),
+        hold_on = widgets.ToggleButtons(value=None,
+                                        options=['Hold on', 'Refresh'],
+                                        icon='refresh',
+                                        description='.',
+                                        disabled=False,
+                                        button_style='success',
+                                        tooltips=[''],
+                                        layout=box_layout,
+                                        style= {'position': 'right'}
+                                        ),
     );
 
 ##############################################################
 # Show Interact
 
-def analisis_espacio_color(color_space, channel, img, a, b, c, f, lineal, save):
+def analisis_espacio_color(color_space, channel, img, a, b, c, f, lineal, save, hold_on):
+    
     img = cv2.imread(img)
     img_space = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
 
@@ -176,6 +194,11 @@ def analisis_espacio_color(color_space, channel, img, a, b, c, f, lineal, save):
 
     color_space, img_space = get_color_space(img, color_space, img_space)
 
+    img_transform = cv2.imread('./img_with_transform/img_transform.jpg')
+    
+    if img_transform is not None:
+        img_space = img_transform
+    
     if lineal == 'True':
         img_space = apply_linear_function(img_space, f, [a, b, c])
 
@@ -204,3 +227,6 @@ def analisis_espacio_color(color_space, channel, img, a, b, c, f, lineal, save):
         cv2.imwrite(os.path.join("results/", img_tittle + '.jpg'), img_space)
     elif save == 'Guardar 1 canal':
         cv2.imwrite(os.path.join("results/", channel_tittle + '.jpg'), img_channel)
+        
+    if hold_on == 'Hold on':
+        cv2.imwrite('./img_with_transform/img_transform.jpg',img_space)
