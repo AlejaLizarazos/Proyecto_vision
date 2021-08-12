@@ -156,7 +156,9 @@ def analisis_threshold(color_space, channel, img, max_lim, min_lim, f, lineal,eq
 
 
 def getmask2(img_rgb_,img_channel_,max_t,min_t):
-    mask = cv2.imread('img\panel_mask.jpg')
+    from pathlib import Path
+    mask_loc=Path.cwd() /'img'/'panel_mask.jpg'
+    mask = cv2.imread(str(mask_loc.relative_to(Path.cwd())))
 
     # img_2 =cv2.bitwise_and(img_2, )
 
