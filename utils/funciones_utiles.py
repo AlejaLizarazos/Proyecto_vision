@@ -165,8 +165,8 @@ def get_color_space(img, color_space, img_space):
                       cv2.COLOR_BGR2YUV if color_space=='YUB' else \
                       cv2.COLOR_BGR2HSV if color_space=='HSV' else \
                       cv2.COLOR_BGR2LAB if color_space=='LAB' else \
-                      cv2.COLOR_RGB2XYZ if color_space=='XYZ' else \
-                      cv2.COLOR_RGB2HLS if color_space=='HLS' else None
+                      cv2.COLOR_BGR2XYZ if color_space=='XYZ' else \
+                      cv2.COLOR_BGR2HLS if color_space=='HLS' else None
 
     if color_space:
         img_space  = cv2.cvtColor(img, color_space)
@@ -195,21 +195,4 @@ def get_color_space(img, color_space, img_space):
 
     return color_space, img_space
 
-def get_mask():
-    
-    import cv2
-    import numpy as np
-
-    img_rgb = cv2.imread("./img/Limpio.jpg")
-
-    HLS= cv2.cvtColor(img_rgb,cv2.COLOR_RGB2HLS)
-    img_H_HLS = HLS[:, :, 0]
-    img_L_HLS = HLS[:, :, 1]
-    img_S_HLS = HLS[:, :, 2]
-
-
-    mask=np.zeros_like(img_rgb)
-    mask[img_S_HLS > 35]=255 
-    
-    return mask
 
