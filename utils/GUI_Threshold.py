@@ -21,7 +21,7 @@ def show_interact_threshold(function, max_v=0, min_v=0, step=0, lineal=True, ima
 
     _ = interact(
         analisis_threshold,
-        color_space=widgets.ToggleButtons(
+        color_space=widgets.ToggleButtons(value='LAB',
             options=['RGB', 'CMY', 'YIQ', 'YUB', 'HSL', 'HSV', 'LAB', 'XYZ', 'HLS'],
             description='Escoge el espacio de color a usar:',
             disabled=False,
@@ -36,9 +36,9 @@ def show_interact_threshold(function, max_v=0, min_v=0, step=0, lineal=True, ima
             layout=box_layout,
             style={'description_width': '200px'}
         ),
-        channel=widgets.RadioButtons(description="Escoge el canal a visualizar:", options=[1, 2, 3], style={'description_width': 'auto'}, ),
+        channel=widgets.RadioButtons(description="Escoge el canal a visualizar:", options=[1, 2, 3], style={'description_width': 'auto'},value=3 ),
 
-        max_lim=widgets.FloatSlider(value=1,
+        max_lim=widgets.FloatSlider(value=255,
                               min=min_v,
                               max=max_v,
                               step=step,
@@ -50,7 +50,7 @@ def show_interact_threshold(function, max_v=0, min_v=0, step=0, lineal=True, ima
                               readout_format='.1f',
                               layout=Layout(display='none') if (not lineal and function != 'T. gamma') else Layout()
                               ),
-        min_lim=widgets.FloatSlider(value=1,
+        min_lim=widgets.FloatSlider(value=140,
                               min=min_v,
                               max=max_v,
                               step=step,
@@ -78,13 +78,15 @@ def show_interact_threshold(function, max_v=0, min_v=0, step=0, lineal=True, ima
                             ),
 
         img=widgets.Dropdown(
-            options=[str(image) for image in images], value=str(images[0]), description="Escoger imagen:",
+            options=[str(image) for image in images], value=str(images[6]), description="Escoger imagen:",
             style={'description_width': 'auto'}
         ),
 
+        eq=widgets.Checkbox(value=True, description='Aplicar ecualización del histograma'),
+
         save=widgets.ToggleButtons(value=None,
-                                   options=['Guardar 3 canales', 'Guardar 1 canal'],
-                                   description='Cómo quieres guardar la imagen:',
+                                   options=['Guardar'],
+                                   description='Guardar imagen:',
                                    disabled=False,
                                    button_style='warning',
                                    tooltips=[''],
@@ -92,13 +94,14 @@ def show_interact_threshold(function, max_v=0, min_v=0, step=0, lineal=True, ima
                                    style={'description_width': '200px'}
                                    ),
 
+
     );
 
 
 ##############################################################
 # Show Interact
 
-def analisis_threshold(color_space, channel, img, max_lim, min_lim, f, lineal,save):
+def analisis_threshold(color_space, channel, img, max_lim, min_lim, f, lineal,eq,save):
     img = cv2.imread(img)
     img_space = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
 
@@ -115,9 +118,12 @@ def analisis_threshold(color_space, channel, img, max_lim, min_lim, f, lineal,sa
 
     img_channel = img_space[:, :, channel - 1]
 
+    if eq:
+        img_channel = cv2.equalizeHist(img_channel)
+
     img_RGB=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
     # print(mask.shape,img_space.shape)
-    fig, arreglo_plots = plt.subplots(2, 2, figsize=(15, 8))
+    fig, arreglo_plots = plt.subplots(2, 2, figsize=(15, 15))
     colors = ('r', 'g', 'b')
 
 
@@ -131,31 +137,31 @@ def analisis_threshold(color_space, channel, img, max_lim, min_lim, f, lineal,sa
     arreglo_plots[0,1].hist(img_array, histtype='step', bins=255,
                           range=(0.0, 255.0), density=True, color=colors[channel - 1])
 
-    arreglo_plots[1,0].set_title(img_tittle)
+    arreglo_plots[0, 1].axvline(max_lim, color='k', linestyle='dashed', linewidth=2)
+    arreglo_plots[0, 1].axvline(min_lim, color='k', linestyle='dashed', linewidth=2)
+
+    arreglo_plots[1,0].set_title('Imagen Original')
     arreglo_plots[1,0].imshow(img_RGB)
 
-    out=getmask2(img_RGB)
+    out=getmask2(img_RGB,img_channel,max_lim, min_lim)
     # out=cv2.bitwise_and( img_space,mask)
-    arreglo_plots[1,1].set_title('Canal ' + channel_tittle)
+    arreglo_plots[1,1].set_title('Imagen con segmentación')
     arreglo_plots[1,1].imshow(out, cmap="gray")
 
     plt.show()
 
-    if save == 'Guardar 3 canales':
-        cv2.imwrite(os.path.join("results/", img_tittle + '.jpg'), img_space)
-    elif save == 'Guardar 1 canal':
-        cv2.imwrite(os.path.join("results/", channel_tittle + '.jpg'), img_channel)
+    if save == 'Guardar':
+        cv2.imwrite(os.path.join("results/Resultado.jpg"), out)
 
 
-def getmask2(img_rgb_):
+
+def getmask2(img_rgb_,img_channel_,max_t,min_t):
     mask = cv2.imread('img\panel_mask.jpg')
-    img_R_RGB = img_rgb_[:, :, 0]
-    img_G_RGB = img_rgb_[:, :, 1]
-    img_B_RGB = img_rgb_[:, :, 2]
 
-    img_2 = 0.596 * img_R_RGB - 0.274 * img_G_RGB - 0.322 * img_B_RGB
     # img_2 =cv2.bitwise_and(img_2, )
 
+
+
     img_out = img_rgb_.copy()
-    img_out[(img_2 > 2)&(mask[:,:,0]==255)] = [200, 200, 0]
+    img_out[(img_channel_>= min_t)&(img_channel_<= max_t)&(mask[:,:,0]==255)] = [200, 200, 0]
     return img_out
